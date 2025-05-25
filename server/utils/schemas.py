@@ -34,6 +34,7 @@ class Relation(BaseModel):
 
 class Location(BaseModel):
     locationId: Optional[str] = None
+    userId: str
     latitude: float
     longitude: float
     width: float

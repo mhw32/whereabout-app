@@ -8,17 +8,11 @@ import {
   EditLocationRequest,
 } from './types';
 
-/**
- * Gets a user using the logged in user
- * @returns (FBUser)
- */
 export const fetchUser = async (user_id: string): Promise<User> => {
   return axiosInstance
-    .get('/api/users/create')
-    .then(res => res.data)
-    .catch(err => {
-      console.error('Error in `fetchUser`:', err);
-    });
+    .get(`/api/users/${user_id}`)
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `fetchUser`:', err));
 };
 
 export const createUser = async (body: CreateUserRequest): Promise<User> => {
@@ -56,6 +50,20 @@ export const deleteFriend = async (friendId: string): Promise<bool> => {
     .post(`/api/friends/${friendId}/delete`, {}, config)
     .then((res: any) => res.data)
     .catch((err: Error) => console.error('Error in `deleteFriend`:', err));
+};
+
+export const fetchLocations = async (): Promise<Location[]> => {
+  return axiosInstance
+    .get('/api/locations')
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `fetchLocations`:', err));
+};
+
+export const fetchLocation = async (location_id: string): Promise<Location> => {
+  return axiosInstance
+    .get(`/api/locations/${location_id}`)
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `fetchLocation`:', err));
 };
 
 export const createLocation = async (

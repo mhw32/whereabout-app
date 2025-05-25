@@ -2,7 +2,7 @@ import json
 import secrets
 import requests
 from time import time
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from firebase_admin import firestore
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi import WebSocket, WebSocketDisconnect
@@ -65,6 +65,17 @@ def read_root():
     return {"message": "Welcome to whereabout's server"}
 
 # --- user endpoints ---
+
+@app.get('/api/users/{user_id')
+async def fetch_user(fb_user: schemas.FBUser = Depends(utils.get_firebase_user)) -> schemas.User:
+    '''Fetch a user.
+    '''
+    user_id = fb_user.uid
+    user_doc = db.collection("Users").document(user_id).get()
+    if not user_doc.exists:
+        raise HTTPException(status_code=400, detail="User does not exist")
+    user = schemas.user_to_pydantic(user_doc)
+    return user
 
 @app.post('/api/users/create')
 async def create_user(
@@ -220,6 +231,34 @@ async def unfriend(
 
 # --- location endpoints ---
 
+@app.get('/api/locations')
+async def fetch_locations(fb_user: schemas.FBUser = Depends(utils.get_firebase_user)) -> List[schemas.Location]:
+    '''Fetch locations.
+    '''
+    user_id = fb_user.uid
+    location_docs = db.collection('Locations')\
+        .where(filter=firestore.firestore.FieldFilter('userId', '==', user_id))\
+        .order_by('updated_at', direction=firestore.Query.DESCENDING)\
+        .stream()
+    locations = [
+        schemas.location_to_pydantic(location_doc, location_doc.id)
+        for location_doc in location_docs
+    ]
+    return locations
+
+@app.get('/api/locations/{location_id}')
+async def fetch_location(
+    location_id: str,
+    fb_user: schemas.FBUser = Depends(utils.get_firebase_user),
+    ) -> Optional[schemas.Location]:
+    '''Fetch location.
+    '''
+    location_doc = db.collection('Locations').document(location_id).get()
+    if location_doc.exists:
+        location = schemas.location_to_pydantic(location_doc, location_doc.id)
+        return location
+    return None
+
 @app.post('/api/locations/create')
 async def create_location(
     body: requests.CreateLocationRequest,
@@ -233,7 +272,9 @@ async def create_location(
         raise HTTPException(status_code=400, default="Tag length cannot be zero")
 
     now = int(time())
+    user_id = fb_user.uid
     location = schemas.Location(
+        userId=user_id,
         latitude=body.latitude,
         longitude=body.longitude,
         width=body.width,

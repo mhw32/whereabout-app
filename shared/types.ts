@@ -21,6 +21,7 @@ export interface Relation {
 
 export interface Location {
   locationId?: string;
+  userId: string;
   latitude: number;
   longitude: number;
   width: number;

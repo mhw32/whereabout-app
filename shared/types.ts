@@ -1,3 +1,58 @@
+import {
+  CompositeScreenProps,
+  NavigatorScreenParams,
+} from "@react-navigation/native";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+
+
+/**
+ * ======================
+ * Navigation Interfaces
+ * ======================
+ */
+
+export type AuthStackParamList = {
+  LoginOrRegister: undefined;
+};
+
+export type AuthStackScreenProps<T extends keyof AuthStackParamList> =
+  NativeStackScreenProps<AuthStackParamList, T>;
+
+export type AppStackScreenProps<T extends keyof AppStackParamList> =
+  NativeStackScreenProps<AppStackParamList, T>;
+
+export type AppStackParamList = {
+  Tabs: NavigatorScreenParams<AppTabParamList>;
+  Profile: undefined;
+  EditProfile: undefined;
+  Location: undefined;
+  EditLocation: undefined;
+  Event: undefined;
+  CreateLocation: undefined;
+  Router: undefined;
+  // PublicProfile: {
+  //   userId?: string;
+  //   editedMixtape?: FBMixtape;
+  //   deletedMixtapeId?: string;
+  //   initTab?: number;
+  //   initNumNotifs?: number;
+  //   fromNotification?: boolean;
+  //   feedHighlight?: string;
+  // };
+}
+
+export type AppTabParamList = {
+  MyFriends: {
+    isOnboarding?: boolean;
+    initHighlight?: string;
+  };
+  MyWhereabouts: {
+    isOnboarding?: boolean;
+  };
+};
+
+
 // === interfaces ===
 
 export interface User {
@@ -27,6 +82,7 @@ export interface Location {
   width: number;
   height: number;
   tag: string;
+  
   category?: string;
   createdAt: number;
   updatedAt: number;

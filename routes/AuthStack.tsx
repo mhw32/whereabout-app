@@ -2,7 +2,6 @@ import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import type { AuthStackParamList } from "../shared/types";
 import LoginOrRegisterView from "../components/auth/LoginOrRegisterView";
-import ResetPasswordView from '../components/auth/ResetPasswordView';
 
 /** 
  * This is purposefully outside of `AuthStack` 
@@ -24,14 +23,6 @@ const AuthStack = () => {
         <Stack.Screen 
           name="LoginOrRegister" 
           component={LoginOrRegisterView}
-          options={{
-            headerShown: false,
-            gestureEnabled: false,
-          }}
-        />
-        <Stack.Screen 
-          name="ResetPassword" 
-          component={ResetPasswordView}
           options={{
             headerShown: false,
             gestureEnabled: false,

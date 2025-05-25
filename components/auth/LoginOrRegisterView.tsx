@@ -7,18 +7,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import auth, { firebase } from "@react-native-firebase/auth";
 import type { AuthStackScreenProps } from "../../shared/types";
-import { useAnalytics } from "@segment/analytics-react-native";
-import { GOOGLE_CLIENT_ID, UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE, HOOPER_PRIVACY_POLICY } from "../../shared/constants";
-import LoadingView from "../shared/LoadingView";
+import { GOOGLE_CLIENT_ID, UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE, WHEREABOUT_PRIVACY_POLICY } from "../../shared/constants";
 
 /**
  * Login/Register screen for Google
  */
 // @ts-ignore navigation-typing-missing
 const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegister">) => {
-  // For analytics
-  const { screen, track } = useAnalytics();
-
   const [error, setError] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -36,8 +31,6 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
     if (dim.height <= 931) {
       setSmallScreen(true);
     }
-    // Track user opening the login screen
-    screen("Login/Register");
   }, []);
 
   /** 
@@ -46,7 +39,6 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
    */
   const handleOnGoogleAuth = async () => {
     try {
-      track("Google Login Clicked");
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       const credential = auth.GoogleAuthProvider.credential(userInfo.idToken);
@@ -56,13 +48,10 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
     } catch (error: any) {
       setOtherAuthLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        track("Google Login Cancelled");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        track("Google Login Error - Play Services Not Available");
         // When play services not available
         Alert.alert("Google Play services are currently not available. Please try another platform?");
       } else {  // some other error
-        track("Google Login Error");
         Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
       }
     }
@@ -76,7 +65,6 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
       let loginError = ''
       const trimmedEmail = email.trim();
       try {
-        track("EmailPassword Login Clicked");
         // Attempt at creating a new user with the email and password inputs
         await auth().createUserWithEmailAndPassword(trimmedEmail, password);
       } catch (error: any) {
@@ -85,15 +73,12 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
         } else {
           // Case when the user has provided a string that's not in a recognizable email format.
           if (error.code == 'auth/invalid-email') {
-            track("EmailPassword Login Error - Invalid Email Address");
             Alert.alert('Please enter a valid email address.');
             setLoading(false);
           } else if (error.code == 'auth/weak-password') {
-            track("EmailPassword Login Error - Weak password");
             Alert.alert('Please use a stronger password.');
             setLoading(false);
           } else {
-            track("EmailPassword Login Error");
             Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
             setLoading(false);
           }
@@ -107,11 +92,9 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
         } catch (error: any) {
           // Case when the pw is wrong OR they're not using their original sign in method
           if (error.code == "auth/wrong-password") {
-            track("EmailPassword Login Error - Wrong Password");
             Alert.alert("Incorrect password or you may want to try the original sign in method.");
             setLoading(false);
           } else {
-            track("EmailPassword Login Error");
             Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
             setLoading(false);
           }
@@ -331,7 +314,7 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
             <Text 
               variant="bodySmall"
               style={{ color: "#808080", textAlign: "center", textDecorationLine: 'underline' }}
-              onPress={() => {Linking.openURL(HOOPER_PRIVACY_POLICY)}}
+              onPress={() => {Linking.openURL(WHEREABOUT_PRIVACY_POLICY)}}
             >
               Privacy Policy
             </Text>

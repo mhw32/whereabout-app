@@ -3,72 +3,45 @@ import auth from "@react-native-firebase/auth";
 import AppStack from "./AppStack";
 import AuthStack from "./AuthStack";
 import { StatusBar, View } from "react-native"
-import type { FBUser } from "../shared/types";
-import { checkUser, fetchUser, createUser } from "../shared/services";
+import type { User } from "../shared/types";
+import { fetchUser, createUser } from "../shared/services";
 import { CreateUserRequest } from "../shared/types";
-import { USER_TYPE_USER, SUBSCRIPTION_TYPE_BETA } from "../shared/constants";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { setAppContentReady } from '../shared/store';
 
 type AuthContextType = {
-  user: FBUser | null;
-  setUser: (user: FBUser) => void;
+  user: User | null;
+  setUser: (user: User) => void;
 }
 
 // Context to store the user
 export const AuthContext = createContext<AuthContextType>({
   user: null,
-  setUser: (user: FBUser) => {},
+  setUser: (user: User) => {},
 });
 
 /**
  * Navigation based on user authentication status
  */
 const AuthNavigator = () => {  
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(true);
   // Stores the user
-  const [user, setUser] = useState<FBUser | null>(null);
-  // For analytics
-  const { track, identify } = useAnalytics();
+  const [user, setUser] = useState<User | null>(null);
 
 
   // Callback to handle signin vs registration
-  const handleOnAnyAuth = async (userId: string, email: string | null): Promise<FBUser> => {
-    let user: FBUser;
-    // Track user identifying themselves
-    await identify(userId, { email: email || undefined });
-    // Check if this user is new or now
-    const userExists = await checkUser(userId);
-    if (userExists) {
-      // If it is an existing user, this is just the user signing in
-      user = await fetchUser(userId);
-    } else {
-      // If it is a new user, create one in db
-      let notificationToken: string | null;
-      try {
-        // Fetch notification token
-        notificationToken = await getNotificationToken();
-      } catch (error) {
-        notificationToken = null;
-      }
+  const handleOnAnyAuth = async (userId: string, email: string | null): Promise<User> => {
+    let user: User;
+    user = await fetchUser(userId);
+    if (!user) {
       // Create POST request to create user on backend
       let body: CreateUserRequest = {
-        type: USER_TYPE_USER,
-        subscriptionType: SUBSCRIPTION_TYPE_BETA,
-      }
-      if (email) {
-        body.email = email;
-      }
-      if (notificationToken) {
-        body.notificationToken = notificationToken;
+        firstName: "",
+        lastName: "",
+        email: email || "",
+        token: "",
       }
       user = await createUser(body);
-      // Track user registration
-      await track("User Registered", { userId: userId });
     }
-    // await AsyncStorage.setItem('hasOnboarded', 'true');
-    await AsyncStorage.setItem('hasOnboarded', 'false');
     return user;
   }
 
@@ -90,8 +63,6 @@ const AuthNavigator = () => {
       console.error(error);
     } finally {
       setLoading(false);
-      // Mark content as ready once we know the auth state
-      dispatch(setAppContentReady());
     }
   }
 
@@ -112,7 +83,7 @@ const AuthNavigator = () => {
         <SafeAreaView 
           style={{
             flex: 1, 
-            backgroundColor: "black",
+            // backgroundColor: "black",
             justifyContent: "center", 
             alignItems: "center"
           }}
@@ -124,7 +95,7 @@ const AuthNavigator = () => {
     if (!user) {
       // When showing auth content, we can mark it as ready
       return (
-        <View style={{flex:1, backgroundColor: "#202429"}}>
+        <View style={{flex:1}}>
           <StatusBar
             backgroundColor="transparent"
             barStyle="light-content"
@@ -137,12 +108,8 @@ const AuthNavigator = () => {
     // Return app content
     return (
       <AuthContext.Provider value={{user, setUser}}>
-        <StatusBar backgroundColor="transparent" barStyle="light-content" />
-        <ActionSheetProvider>
-          <HighlightProvider>
-            <AppStack/>
-          </HighlightProvider>
-        </ActionSheetProvider>
+        <StatusBar backgroundColor="transparent" barStyle="dark-content" />
+        <AppStack/>
       </AuthContext.Provider>
     );
   }

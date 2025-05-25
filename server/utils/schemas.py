@@ -1,6 +1,21 @@
 from typing import Optional
 from pydantic import BaseModel
 
+class FBUser(BaseModel):
+    '''Firebase user'''
+    name          : Optional[str] = None
+    picture       : Optional[str] = None
+    iss           : str
+    aud           : str
+    auth_time     : int
+    user_id       : str
+    sub           : str
+    iat           : int
+    exp           : int
+    email         : str
+    email_verified: bool
+    uid           : str
+
 class User(BaseModel):
     userId: str
     email: Optional[str] = None

@@ -1,3 +1,4 @@
+from cmath import rect
 import json
 import secrets
 import requests
@@ -63,6 +64,53 @@ def check_admin_credentials(credentials: HTTPBasicCredentials = Depends(admin_se
 @app.get("/")
 def read_root():
     return {"message": "Welcome to whereabout's server"}
+
+# --- feed endpoints ---
+
+@app.get('/api/feed')
+async def fetch_feed(
+    page: int = 0,
+    limit: int = 10,
+    fb_user: schemas.FBUser = Depends(utils.get_firebase_user),
+    ) -> List[schemas.FeedItem]:
+    '''Fetch latest events for each friend.
+    '''
+    user_id = fb_user.uid
+    # Fetch list of friends
+    relation_docs = db.collection("Relations")\
+        .where(filter=firestore.firestore.FieldFilter('userId', '==', user_id))\
+        .offset(page * limit)\
+        .limit(limit)\
+        .stream()
+    friends: List[schemas.User] = []
+    for relation_doc in relation_docs:
+        relation = schemas.relation_to_pydantic(relation_doc, relation_doc.id)
+        friend_id = relation.recipientId if relation.userId == user_id else relation.userId
+        friend = schemas.user_to_pydantic(friend_id)
+        friends.append(friend)
+    # For each friend
+    feed_items: List[schemas.FeedItem] = []
+    for friend in friends:
+        friend_id = friend.userId
+        # Find the latest event
+        event_docs = db.collection("Events")\
+            .where(filter=firestore.firestore.FieldFilter('userId', '==', user_id))\
+            .order_by('updated_at', direction=firestore.Query.DESCENDING)\
+            .limit(1)\
+            .get()
+        if len(event_docs) == 0:
+            continue
+        event_doc = event_docs[0]
+        event = schemas.event_to_pydantic(event_doc, event_doc.id)
+        # Fetch the corresponding location
+        location_id = event.locationId
+        location_doc = db.collection("Locations").document(location_id).get()
+        if not location_doc.exists:
+            continue
+        location = schemas.location_to_pydantic(location_doc, location_id)
+        feed_item = schemas.FeedItem(user=friend, event=event, location=location)
+        feed_items.append(feed_item)
+    return feed_items
 
 # --- user endpoints ---
 

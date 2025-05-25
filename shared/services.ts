@@ -1,5 +1,5 @@
 import {axiosInstance} from './axios';
-import {User, Relation, Location, Event} from './types';
+import {User, Relation, Location, FeedItem} from './types';
 import {
   CreateUserRequest,
   UpdateUserTokenRequest,
@@ -7,6 +7,13 @@ import {
   CreateLocationRequest,
   EditLocationRequest,
 } from './types';
+
+export const fetchFeed = async (): Promise<FeedItem[]> => {
+  return axiosInstance
+    .get('/api/feed')
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `fetchFeed`:', err));
+};
 
 export const fetchUser = async (user_id: string): Promise<User> => {
   return axiosInstance
@@ -44,7 +51,7 @@ export const createFriend = async (
     .catch((err: Error) => console.error('Error in `createFriend`:', err));
 };
 
-export const deleteFriend = async (friendId: string): Promise<bool> => {
+export const deleteFriend = async (friendId: string): Promise<boolean> => {
   const config = {headers: {'Content-Type': 'application/json'}};
   return axiosInstance
     .post(`/api/friends/${friendId}/delete`, {}, config)

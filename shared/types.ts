@@ -40,6 +40,12 @@ export interface Event {
   updatedAt: number;
 }
 
+export interface FeedItem {
+  user: User;
+  event: Event;
+  location: Location;
+}
+
 // === requests ===
 
 export interface CreateUserRequest {

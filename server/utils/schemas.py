@@ -51,6 +51,11 @@ class Event(BaseModel):
     createdAt: int
     updatedAt: int
 
+class FeedItem(BaseModel):
+    user: User
+    event: Event
+    location: Location
+
 # --- pydantic utilities ---
 
 def user_to_pydantic(user) -> User:

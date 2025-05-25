@@ -13,6 +13,32 @@ class UpdateUserTokenRequest(BaseModel):
     userId: str
     token : Optional[str] = None
 
+# --- friend requests ---
+
+class CreateRelationRequest(BaseModel):
+    recipientId: str
+
 # --- location requests ---
 
+class CreateLocationRequest(BaseModel):
+    userId: str
+    latitude: float
+    longitude: float
+    width: float
+    height: float
+    tag: str
+    category: Optional[str] = None
+
+class EditLocationRequest(BaseModel):
+    latitude: float
+    longitude: float
+    width: float
+    height: float
+    tag: str
+    category: Optional[str] = None
+
 # --- event requests ---
+
+class CreateEventRequest(BaseModel):
+    userId: str
+    locationId: str

@@ -17,6 +17,7 @@ const Stack = createNativeStackNavigator<AuthStackParamList>();
  * @note The app starts with the top-most screen
  */
 const AuthStack = () => {
+  console.log("AuthStack");
   return (
     <NavigationContainer theme={DarkTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false}}>

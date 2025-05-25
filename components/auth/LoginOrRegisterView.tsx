@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
-import { Platform, Linking, Pressable, TouchableOpacity } from "react-native";
+import { Platform, Linking, Pressable, TouchableOpacity, StyleSheet } from "react-native";
 import { View, Alert, Image, TextInput, Dimensions } from "react-native";
 import { Button, Text, ActivityIndicator } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +7,30 @@ import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-si
 import auth, { firebase } from "@react-native-firebase/auth";
 import type { AuthStackScreenProps } from "../../shared/types";
 import { GOOGLE_CLIENT_ID, UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE, WHEREABOUT_PRIVACY_POLICY } from "../../shared/constants";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  safeArea: {
+    flex: 1,
+    gap: 14,
+    paddingHorizontal: 32,
+    backgroundColor: "white",
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center" as const,
+  },
+  text: {
+    color: "black",
+    fontSize: 24,
+    fontWeight: "bold" as const,
+  }
+});
 
 /**
  * Login/Register screen for Google
@@ -21,9 +44,11 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
   const [smallScreen, setSmallScreen] = useState<boolean>(false);
   const [otherAuthLoading, setOtherAuthLoading] = useState<boolean>(false);
 
+  console.log("LoginOrRegisterView");
   // Hook for Google sign-in
   // Other services do not need hooks
   useEffect(() => {
+    console.log("GoogleSignin.configure");
     GoogleSignin.configure({ webClientId: GOOGLE_CLIENT_ID });
     // Getting the device's height so that I can adjust some of the height of some of the views that are rendered.
     // 812 is the height of the iPhone 13 mini
@@ -33,87 +58,17 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
     }
   }, []);
 
-  /** 
-   * Callback when logging into google
-   * @note https://github.com/react-native-google-signin/google-signin
-   */
-  const handleOnGoogleAuth = async () => {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      const credential = auth.GoogleAuthProvider.credential(userInfo.idToken);
-      // Sign-in the user with the credential
-      await auth().signInWithCredential(credential);
-      setOtherAuthLoading(true);
-    } catch (error: any) {
-      setOtherAuthLoading(false);
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        // When play services not available
-        Alert.alert("Google Play services are currently not available. Please try another platform?");
-      } else {  // some other error
-        Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
-      }
-    }
-  }
-
-    /**
-   * Callback when logging in via email/password
-   */
-    const handleOnEmailPasswordAuth = async () => {
-      setLoading(true);        // Turn on activity indicator
-      let loginError = ''
-      const trimmedEmail = email.trim();
-      try {
-        // Attempt at creating a new user with the email and password inputs
-        await auth().createUserWithEmailAndPassword(trimmedEmail, password);
-      } catch (error: any) {
-        if (error.code == "auth/email-already-in-use") {
-          loginError = 'email_in_use'
-        } else {
-          // Case when the user has provided a string that's not in a recognizable email format.
-          if (error.code == 'auth/invalid-email') {
-            Alert.alert('Please enter a valid email address.');
-            setLoading(false);
-          } else if (error.code == 'auth/weak-password') {
-            Alert.alert('Please use a stronger password.');
-            setLoading(false);
-          } else {
-            Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
-            setLoading(false);
-          }
-        }
-      }
-      // If the email exists.
-      if (loginError == 'email_in_use') {
-        try {
-          // Attempt at logging in with the email and password inputs
-          await auth().signInWithEmailAndPassword(trimmedEmail, password);
-        } catch (error: any) {
-          // Case when the pw is wrong OR they're not using their original sign in method
-          if (error.code == "auth/wrong-password") {
-            Alert.alert("Incorrect password or you may want to try the original sign in method.");
-            setLoading(false);
-          } else {
-            Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
-            setLoading(false);
-          }
-        }
-      }
-    }
-
   // Render components for login buttons
   const getLoginButtons = () => {
     var buttons = [
       {
-        buttonIcon: require("../../media/icons/social-google.png"),
+        // buttonIcon: require("../../media/icons/social-google.png"),
         backgroundColor: "#16181A",
         size: 28,
         padding: 12,
         onPressFunction: handleOnGoogleAuth
       }
     ];
-    }
 
     const buttonViews = buttons.map((item, index) => {
       return (
@@ -145,183 +100,45 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
     });
     return buttonViews;
   }
-  
+
+  /** 
+   * Callback when logging into google
+   * @note https://github.com/react-native-google-signin/google-signin
+   */
+  const handleOnGoogleAuth = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const credential = auth.GoogleAuthProvider.credential(userInfo.idToken);
+      // Sign-in the user with the credential
+      await auth().signInWithCredential(credential);
+      setOtherAuthLoading(true);
+    } catch (error: any) {
+      setOtherAuthLoading(false);
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // When play services not available
+        Alert.alert("Google Play services are currently not available. Please try another platform?");
+      } else {  // some other error
+        Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
+      }
+    }
+  }
+
   const isDisabled = email === '' || password === '' || loading;
-  
-  if (otherAuthLoading) {
-    return (
-      <LoadingView/>
-    )
-  } 
+
   return (
-    <SafeAreaView 
-      style={{ 
-        backgroundColor: "black",
-        flex: 1, 
-        gap: 14, 
-        paddingHorizontal: 32,
-      }}
-      edges={['right', 'bottom', 'left', 'top']}
-    >
-      <View 
-        style={{
-          height: smallScreen ? 80 : 150, 
-          paddingHorizontal: 60,
-          flexDirection: "column", 
-          justifyContent: "center", 
-          alignItems: "center",
-          marginTop: Platform.OS === 'android' ? 30 : 0
-        }}
+    <View style={styles.container}>
+      <SafeAreaView 
+        style={styles.safeArea}
+        edges={['right', 'bottom', 'left', 'top']}
       >
-        <Image 
-          style={{ width: "100%", resizeMode: "contain" }} 
-          source={require("../../media/logos/hooper-logo-white.png")}
-        />
-      </View>
-      <Text
-        variant="bodyMedium"
-        style={{ color: "white", fontWeight: "bold", textAlign: "center" }}
-      >
-        Continue with:
-      </Text>
-      <View style={{ justifyContent: "center", alignItems: "center", gap: 10 }}>
-        <TextInput
-          style={{
-            width: 311,
-            height: 48,
-            borderWidth: 1,
-            borderColor: (error.length > 0) ? "#E52E4D" : "#78808D",
-            borderRadius: 5,
-            backgroundColor: "#16181A",
-            paddingHorizontal: 20,
-            fontSize: 18,
-            color: "white"
-          }}
-          placeholder="Email address"
-          placeholderTextColor="#78808D"
-          inputMode="email"
-          onChangeText={email => setEmail(email)}
-          value={email}
-          autoCorrect={false}
-          autoCapitalize="none"
-          autoComplete="off"
-        />
-        <TextInput
-          style={{
-            width: 311,
-            height: 48,
-            borderWidth: 1,
-            borderColor: (error.length > 0) ? "#E52E4D" : "#78808D",
-            borderRadius: 5,
-            backgroundColor: "#16181A",
-            paddingHorizontal: 20,
-            fontSize: 18,
-            color: "white",
-          }}
-          placeholder="Password"
-          placeholderTextColor="#78808D"
-          inputMode="text"
-          onChangeText={password => setPassword(password)}
-          value={password}
-          secureTextEntry={true}
-          autoCorrect={false}
-          autoCapitalize="none"
-          autoComplete="off"
-        />
-        <Button 
-          mode="contained"
-          onPress={handleOnEmailPasswordAuth}
-          disabled={isDisabled}
-          labelStyle={{ fontSize: 16, fontWeight: "bold" }}
-          style={{
-            width: 311,
-            height: 48,
-            backgroundColor: isDisabled ? "#78808D" : "#5040FF",
-            paddingVertical: 5,
-            borderRadius: 30,
-          }}
-        >
-          {
-            loading ? (
-              <ActivityIndicator animating={true} color="white" size="small"/>
-            ) : (
-              <Text style={{ color: isDisabled ? "#abb2bf" : "white", fontWeight: "bold" }}>
-                Continue
-              </Text>
-            )
-          }
-        </Button>
-      </View>
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: 311,
-        alignSelf: "center"
-      }}>
-        <View style={{ flex: 1, height: 1, backgroundColor: '#202429' }} />
-        <View>
-          <Text
-            variant="bodyMedium"
-            style={{
-              color: "white",
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
-          >
-            OR
-          </Text>
+        <View style={styles.contentContainer}>
+          <Text style={styles.text}>Login or Register</Text>
+          {getLoginButtons()}
         </View>
-        <View style={{flex: 1, height: 1, backgroundColor: '#202429'}} />
-      </View>
-      <View 
-        style={{ 
-          flexDirection: "row",
-          justifyContent: "space-evenly",
-          width: 311,
-          alignSelf: "center"
-        }}
-      >
-        {getLoginButtons()}
-      </View>
-      <Pressable 
-        style={{ 
-          alignSelf: 'center',
-        }}
-        onPress={() => navigation.push('ResetPassword')}
-      >
-        <Text 
-          variant="bodySmall"
-          style={{ 
-            color: "#ABB2BF", 
-            textAlign: "center", 
-            textDecorationLine: 'underline',
-          }}
-        >
-          Trouble signing in?
-        </Text>
-      </Pressable>
-      <View
-        style={{ 
-          alignSelf: "center", 
-          width: 176, 
-          paddingTop: 200
-      }}>
-        <Text 
-          variant="bodySmall"
-          style={{ color: "#808080", textAlign: "center" }}
-        >
-          By signing up, you agree to our{" "}
-            <Text 
-              variant="bodySmall"
-              style={{ color: "#808080", textAlign: "center", textDecorationLine: 'underline' }}
-              onPress={() => {Linking.openURL(WHEREABOUT_PRIVACY_POLICY)}}
-            >
-              Privacy Policy
-            </Text>
-          .
-        </Text>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 

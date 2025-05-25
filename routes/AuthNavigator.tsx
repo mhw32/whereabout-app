@@ -83,7 +83,7 @@ const AuthNavigator = () => {
         <SafeAreaView 
           style={{
             flex: 1, 
-            // backgroundColor: "black",
+            backgroundColor: "white",
             justifyContent: "center", 
             alignItems: "center"
           }}
@@ -95,10 +95,10 @@ const AuthNavigator = () => {
     if (!user) {
       // When showing auth content, we can mark it as ready
       return (
-        <View style={{flex:1}}>
+        <View style={{flex: 1, backgroundColor: "white"}}>
           <StatusBar
             backgroundColor="transparent"
-            barStyle="light-content"
+            barStyle="dark-content"
           />
           <AuthStack/>
         </View>
@@ -108,8 +108,10 @@ const AuthNavigator = () => {
     // Return app content
     return (
       <AuthContext.Provider value={{user, setUser}}>
-        <StatusBar backgroundColor="transparent" barStyle="dark-content" />
-        <AppStack/>
+        <View style={{flex: 1, backgroundColor: "white"}}>
+          <StatusBar backgroundColor="transparent" barStyle="dark-content" />
+          <AppStack/>
+        </View>
       </AuthContext.Provider>
     );
   }

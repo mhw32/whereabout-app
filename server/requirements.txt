@@ -1,0 +1,6 @@
+fastapi[standard]
+firebase-admin
+requests
+python-dotenv
+uvicorn[standard]
+numpy

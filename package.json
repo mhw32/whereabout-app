@@ -1,5 +1,5 @@
 {
-  "name": "Whereabout",
+  "name": "whereabout",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "@react-native-firebase/app": "^22.2.0",
     "@react-native-firebase/auth": "^22.2.0",
     "@react-native-firebase/firestore": "^22.2.0",

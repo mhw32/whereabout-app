@@ -20,7 +20,7 @@ class User(BaseModel):
     email: Optional[str] = None
     firstName: Optional[str] = None
     lastName: Optional[str] = None
-    notificationToken: Optional[str] = None
+    token: Optional[str] = None
     createdAt: int
     updatedAt: int
 

@@ -1,51 +1,40 @@
-import axios from "axios";
-import auth from "@react-native-firebase/auth";
-import { API_URL } from "./constants";
-import { getIdToken } from "./utils";
+import axios from 'axios';
 
 // Status code constants for readability
 const UNAUTHORIZED = 401;
+// Read important global variables from env vars
+export const API_URL: string = process.env.REACT_APP_API_URL || '';
+export const AUTH_USERNAME: string = process.env.REACT_APP_AUTH_USERNAME || '';
+export const AUTH_PASSWORD: string = process.env.REACT_APP_AUTH_PASSWORD || '';
 
 /**
  * Axios Instance
  *
  * This axios instance contains the Bearer token and the BASE URL
  * for the API.
- * 
+ *
  * @returns AxiosInstance
  */
 export const axiosInstance = axios.create({
   baseURL: API_URL,
 });
 
-/**
- * Fetches the access token from local storage for firebase authentication
- * @returns string
- */
-const getFirebaseToken = async (): Promise<string | null> => {
-  const token = await getIdToken();
-  return token;
+const handleUnauthorizedError = () => {
+  console.error('Unauthorized: incorrect admin username and password');
 };
 
 /**
- * Handle case when token is invalid or missing
- */
-const handleUnauthorizedError = async () => {
-  // We ask firebase to sign out
-  await auth().signOut();
-};
-
-/**
- * Request interceptor 
- * Adds a bearer token to the request header
+ * Request interceptor
+ * Adds a basic auth token to the request header
  */
 axiosInstance.interceptors.request.use(
-  async (config) => {
-    const token = await getFirebaseToken();
-    config.headers["Authorization"] = `Bearer ${token}`;
+  async config => {
+    // https://en.wikipedia.org/wiki/Basic_access_authentication
+    const encoded = btoa(`${AUTH_USERNAME}:${AUTH_PASSWORD}`);
+    config.headers['Authorization'] = `Basic ${encoded}`;
     return config;
   },
-  (error) => Promise.reject(error),
+  error => Promise.reject(error),
 );
 
 /**
@@ -53,17 +42,14 @@ axiosInstance.interceptors.request.use(
  * Handles 401 errors
  */
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     if (error.response.status === UNAUTHORIZED) {
       /**
-       * if the status code is 401 Unauthorized is a token expired,
-       * we try to refresh the token and if we got an error delete
-       * all the values on the local storage and reload the page.
+       * if the status code is 401 Unauthorized, call handler
        */
-      await handleUnauthorizedError();
+      handleUnauthorizedError();
     }
-    console.error(error);  // cast to stdout (optional)
     return error.response;
-  }
+  },
 );

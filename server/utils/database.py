@@ -2,7 +2,7 @@ from os.path import dirname, join
 from typing import Optional
 from firebase_admin import firestore, credentials, get_app, initialize_app
 
-SERVICE_ACCOUNT_FILE = join(dirname(__file__), 'firebase.json')
+SERVICE_ACCOUNT_FILE = join(dirname(__file__), '../firebase.json')
 FIREBASE_STORAGE_BUCKET = 'gs://whereabout-81534.appspot.com'
 
 def get_firebase_client(service_account_file: Optional[str] = SERVICE_ACCOUNT_FILE) -> firestore.firestore.Client:

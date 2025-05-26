@@ -22,13 +22,13 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     backgroundColor: "white",
-    justifyContent: "center",
     alignItems: "center" as const,
   },
   text: {
     color: "black",
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold" as const,
+    // alignSelf: "center",
   }
 });
 
@@ -44,11 +44,9 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
   const [smallScreen, setSmallScreen] = useState<boolean>(false);
   const [otherAuthLoading, setOtherAuthLoading] = useState<boolean>(false);
 
-  console.log("LoginOrRegisterView");
   // Hook for Google sign-in
   // Other services do not need hooks
   useEffect(() => {
-    console.log("GoogleSignin.configure");
     GoogleSignin.configure({ webClientId: GOOGLE_CLIENT_ID });
     // Getting the device's height so that I can adjust some of the height of some of the views that are rendered.
     // 812 is the height of the iPhone 13 mini
@@ -62,7 +60,7 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
   const getLoginButtons = () => {
     var buttons = [
       {
-        // buttonIcon: require("../../media/icons/social-google.png"),
+        buttonIcon: require("../../media/icons/social-google.png"),
         backgroundColor: "#16181A",
         size: 28,
         padding: 12,
@@ -75,6 +73,7 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
         <TouchableOpacity 
           key={`auth-button-${index}`}
           onPress={item.onPressFunction}
+          style={{marginTop: 60}}
         >
           <View 
             style={{
@@ -120,6 +119,7 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
         // When play services not available
         Alert.alert("Google Play services are currently not available. Please try another platform?");
       } else {  // some other error
+        console.error("error", error);
         Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
       }
     }
@@ -134,7 +134,9 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
         edges={['right', 'bottom', 'left', 'top']}
       >
         <View style={styles.contentContainer}>
-          <Text style={styles.text}>Login or Register</Text>
+          <View style={{flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 100}}>
+            <Text style={styles.text}>Whereabout</Text>
+          </View>
           {getLoginButtons()}
         </View>
       </SafeAreaView>

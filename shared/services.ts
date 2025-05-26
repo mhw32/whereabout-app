@@ -8,9 +8,12 @@ import {
   EditLocationRequest,
 } from './types';
 
-export const fetchFeed = async (): Promise<FeedItem[]> => {
+export const fetchFeed = async (
+  page: number = 0,
+  limit: number = 10,
+): Promise<FeedItem[]> => {
   return axiosInstance
-    .get('/api/feed')
+    .get('/api/feed', {params: {page: page, limit: limit}})
     .then((res: any) => res.data)
     .catch((err: Error) => console.error('Error in `fetchFeed`:', err));
 };

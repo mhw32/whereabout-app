@@ -40,6 +40,8 @@ const AuthNavigator = () => {
         email: email || "",
         token: "",
       }
+      console.log("createUser");
+      console.log("body", body);
       user = await createUser(body);
     }
     return user;
@@ -69,7 +71,6 @@ const AuthNavigator = () => {
   // Hook to authenticate user on mount
   useEffect(() => {
     setLoading(true);
-
     // Hook for firebase
     auth().onAuthStateChanged(onAuthStateChanged)
 

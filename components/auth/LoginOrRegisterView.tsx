@@ -108,22 +108,27 @@ const LoginOrRegisterView = ({ navigation }: AuthStackScreenProps<"LoginOrRegist
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      const credential = auth.GoogleAuthProvider.credential(userInfo.idToken);
-      // Sign-in the user with the credential
+      const { idToken } = await GoogleSignin.getTokens();
+  
+      if (!idToken) {
+        throw new Error("No idToken returned from Google Signin.");
+      }
+  
+      const credential = auth.GoogleAuthProvider.credential(idToken);
       await auth().signInWithCredential(credential);
-      setOtherAuthLoading(true);
     } catch (error: any) {
       setOtherAuthLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        // When play services not available
-        Alert.alert("Google Play services are currently not available. Please try another platform?");
-      } else {  // some other error
-        console.error("error", error);
+        Alert.alert("Google Play services not available.");
+      } else {
+        console.error("Google Auth error:", error);
         Alert.alert(UNKNOWN_ERROR_TITLE, UNKNOWN_ERROR_MESSAGE);
       }
     }
-  }
+  };
+  
 
   const isDisabled = email === '' || password === '' || loading;
 

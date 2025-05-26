@@ -1,12 +1,15 @@
 import {axiosInstance} from './axios';
-import {User, Relation, Location, FeedItem} from './types';
+import {User, Relation, Location, FeedItem, LocationEvent} from './types';
 import {
   CreateUserRequest,
   UpdateUserTokenRequest,
   CreateRelationRequest,
   CreateLocationRequest,
   EditLocationRequest,
+  CreateEventRequest,
 } from './types';
+
+// === feed endpoints ===
 
 export const fetchFeed = async (): Promise<FeedItem[]> => {
   return axiosInstance
@@ -14,6 +17,8 @@ export const fetchFeed = async (): Promise<FeedItem[]> => {
     .then((res: any) => res.data)
     .catch((err: Error) => console.error('Error in `fetchFeed`:', err));
 };
+
+// === user endpoints ===
 
 export const fetchUser = async (user_id: string): Promise<User> => {
   return axiosInstance
@@ -41,6 +46,8 @@ export const updateUserToken = async (
     .catch((err: Error) => console.error('Error in `updateUserToken`:', err));
 };
 
+// === relation endpoints ===
+
 export const createFriend = async (
   body: CreateRelationRequest,
 ): Promise<[Relation, Relation]> => {
@@ -58,6 +65,8 @@ export const deleteFriend = async (friendId: string): Promise<boolean> => {
     .then((res: any) => res.data)
     .catch((err: Error) => console.error('Error in `deleteFriend`:', err));
 };
+
+// === location endpoints ===
 
 export const fetchLocations = async (): Promise<Location[]> => {
   return axiosInstance
@@ -100,4 +109,31 @@ export const deleteLocation = async (locationId: string): Promise<Location> => {
     .post(`/api/locations/${locationId}/delete`, {}, config)
     .then((res: any) => res.data)
     .catch((err: Error) => console.error('Error in `deleteLocation`:', err));
+};
+
+// === event endpoints ===
+
+export const fetchEvent = async (eventId: string): Promise<LocationEvent> => {
+  return axiosInstance
+    .get(`/api/events/${eventId}`)
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `fetchEvent`:', err));
+};
+
+export const createEvent = async (
+  body: CreateEventRequest,
+): Promise<LocationEvent> => {
+  const config = {headers: {'Content-Type': 'application/json'}};
+  return axiosInstance
+    .post('/api/events/create', body, config)
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `createEvent`:', err));
+};
+
+export const deleteEvent = async (eventId: string): Promise<LocationEvent> => {
+  const config = {headers: {'Content-Type': 'application/json'}};
+  return axiosInstance
+    .post(`/api/events/${eventId}/delete`, {}, config)
+    .then((res: any) => res.data)
+    .catch((err: Error) => console.error('Error in `deleteEvent`:', err));
 };

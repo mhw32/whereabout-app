@@ -1,10 +1,9 @@
 import {
   CompositeScreenProps,
   NavigatorScreenParams,
-} from "@react-navigation/native";
-import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-
+} from '@react-navigation/native';
+import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 /**
  * ======================
@@ -13,45 +12,42 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
  */
 
 export type AuthStackParamList = {
-  LoginOrRegister: undefined;
+  Login: undefined;
 };
 
 export type AuthStackScreenProps<T extends keyof AuthStackParamList> =
   NativeStackScreenProps<AuthStackParamList, T>;
 
+export type AppStackParamList = {
+  Tabs: NavigatorScreenParams<AppTabParamList>;
+  Profile: {
+    userId: string;
+  };
+  EditProfile: undefined;
+  Location: {
+    locationId: string;
+  };
+  EditLocation: undefined;
+  Event: {
+    eventId: string;
+  };
+  CreateLocation: undefined;
+  Router: undefined;
+};
+
 export type AppStackScreenProps<T extends keyof AppStackParamList> =
   NativeStackScreenProps<AppStackParamList, T>;
 
-export type AppStackParamList = {
-  Tabs: NavigatorScreenParams<AppTabParamList>;
-  Profile: undefined;
-  EditProfile: undefined;
-  Location: undefined;
-  EditLocation: undefined;
-  Event: undefined;
-  CreateLocation: undefined;
-  Router: undefined;
-  // PublicProfile: {
-  //   userId?: string;
-  //   editedMixtape?: FBMixtape;
-  //   deletedMixtapeId?: string;
-  //   initTab?: number;
-  //   initNumNotifs?: number;
-  //   fromNotification?: boolean;
-  //   feedHighlight?: string;
-  // };
-}
-
 export type AppTabParamList = {
-  MyFriends: {
-    isOnboarding?: boolean;
-    initHighlight?: string;
-  };
-  MyWhereabouts: {
-    isOnboarding?: boolean;
-  };
+  MyFriends: {};
+  Me: {};
 };
 
+export type AppTabScreenProps<T extends keyof AppTabParamList> =
+  CompositeScreenProps<
+    BottomTabScreenProps<AppTabParamList, T>,
+    AppStackScreenProps<keyof AppStackParamList>
+  >;
 
 // === interfaces ===
 
@@ -82,13 +78,12 @@ export interface Location {
   width: number;
   height: number;
   tag: string;
-  
   category?: string;
   createdAt: number;
   updatedAt: number;
 }
 
-export interface Event {
+export interface LocationEvent {
   eventId?: string;
   userId: string;
   locationId: string;
@@ -98,8 +93,8 @@ export interface Event {
 
 export interface FeedItem {
   user: User;
-  event: Event;
   location: Location;
+  event: LocationEvent;
 }
 
 // === requests ===

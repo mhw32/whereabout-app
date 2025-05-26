@@ -1,17 +1,17 @@
-import React, { useState, useEffect, createContext } from "react";
-import auth from "@react-native-firebase/auth";
-import AppStack from "./AppStack";
-import AuthStack from "./AuthStack";
-import { StatusBar, View } from "react-native"
-import type { User } from "../shared/types";
-import { fetchUser, createUser } from "../shared/services";
-import { CreateUserRequest } from "../shared/types";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, {useState, useEffect, createContext} from 'react';
+import auth from '@react-native-firebase/auth';
+import AppStack from './AppStack';
+import AuthStack from './AuthStack';
+import {StatusBar, View} from 'react-native';
+import type {User} from '../shared/types';
+import {fetchUser, createUser} from '../shared/services';
+import {CreateUserRequest} from '../shared/types';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 type AuthContextType = {
   user: User | null;
   setUser: (user: User) => void;
-}
+};
 
 // Context to store the user
 export const AuthContext = createContext<AuthContextType>({
@@ -22,40 +22,39 @@ export const AuthContext = createContext<AuthContextType>({
 /**
  * Navigation based on user authentication status
  */
-const AuthNavigator = () => {  
+const AuthNavigator = () => {
   const [loading, setLoading] = useState<boolean>(true);
   // Stores the user
   const [user, setUser] = useState<User | null>(null);
 
-
   // Callback to handle signin vs registration
-  const handleOnAnyAuth = async (userId: string, email: string | null): Promise<User> => {
-    let user: User;
-    user = await fetchUser(userId);
-    if (!user) {
+  const handleOnAnyAuth = async (
+    userId: string,
+    email: string | null,
+  ): Promise<User> => {
+    let user_: User;
+    user_ = await fetchUser(userId);
+    if (!user_) {
       // Create POST request to create user on backend
       let body: CreateUserRequest = {
-        firstName: "",
-        lastName: "",
-        email: email || "",
-        token: "",
-      }
-      console.log("createUser");
-      console.log("body", body);
-      user = await createUser(body);
+        firstName: '',
+        lastName: '',
+        email: email || '',
+      };
+      user_ = await createUser(body);
     }
-    return user;
-  }
+    return user_;
+  };
 
   // onAuthStateChanged - Handles user state changes
-  // @note, `fbUser` and `user` are two distinct objects. The first 
-  // is returned it us by firebase (managing state and auth), and the 
-  // second is the user object we maintain ourselves in the database 
+  // @note, `fbUser` and `user` are two distinct objects. The first
+  // is returned it us by firebase (managing state and auth), and the
+  // second is the user object we maintain ourselves in the database
   const onAuthStateChanged = async (fbUser: any) => {
     try {
       if (fbUser) {
-        const user = await handleOnAnyAuth(fbUser.uid, fbUser.email);
-        setUser(user);
+        const u = await handleOnAnyAuth(fbUser.uid, fbUser.email);
+        setUser(u);
       } else {
         // Calls this when logging out. Set user to `null`
         setUser(null);
@@ -66,42 +65,38 @@ const AuthNavigator = () => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   // Hook to authenticate user on mount
   useEffect(() => {
     setLoading(true);
     // Hook for firebase
-    auth().onAuthStateChanged(onAuthStateChanged)
-
-  }, []);
+    auth().onAuthStateChanged(onAuthStateChanged);
+  }, [onAuthStateChanged]);
 
   // Pick the content to render
   const getContent = () => {
     // If loading, then show a loading screen
     if (loading) {
       return (
-        <SafeAreaView 
+        <SafeAreaView
           style={{
-            flex: 1, 
-            backgroundColor: "white",
-            justifyContent: "center", 
-            alignItems: "center"
+            flex: 1,
+            backgroundColor: 'white',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
           edges={['right', 'bottom', 'left']}
         />
       );
-    } 
+    }
 
     if (!user) {
       // When showing auth content, we can mark it as ready
       return (
-        <View style={{flex: 1, backgroundColor: "white"}}>
-          <StatusBar
-            backgroundColor="transparent"
-            barStyle="dark-content"
-          />
-          <AuthStack/>
+        <View style={{flex: 1, backgroundColor: 'white'}}>
+          <StatusBar backgroundColor="transparent" barStyle="dark-content" />
+          <AuthStack />
         </View>
       );
     }
@@ -109,15 +104,15 @@ const AuthNavigator = () => {
     // Return app content
     return (
       <AuthContext.Provider value={{user, setUser}}>
-        <View style={{flex: 1, backgroundColor: "white"}}>
+        <View style={{flex: 1, backgroundColor: 'white'}}>
           <StatusBar backgroundColor="transparent" barStyle="dark-content" />
-          <AppStack/>
+          <AppStack />
         </View>
       </AuthContext.Provider>
     );
-  }
+  };
 
   return getContent();
-}
+};
 
 export default AuthNavigator;

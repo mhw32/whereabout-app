@@ -391,6 +391,19 @@ async def delete_location(
 
 # --- event endpoints ---
 
+@app.get('/api/events/{event_id}')
+async def fetch_event(
+    event_id: str,
+    fb_user: schemas.FBUser = Depends(utils.get_firebase_user),
+    ) -> Optional[schemas.Event]:
+    '''Fetch location.
+    '''
+    event_doc = db.collection('Events').document(event_id).get()
+    if event_doc.exists:
+        event = schemas.event_to_pydantic(event_doc, event_doc.id)
+        return event
+    return None
+
 @app.post('/api/events/create')
 async def create_event(
     body: requests.CreateEventRequest,
